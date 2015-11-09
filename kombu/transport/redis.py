@@ -273,7 +273,11 @@ class MultiChannelPoller(object):
         self.poller.register(sock, self.eventflags)
 
     def _unregister(self, channel, client, type):
-        self.poller.unregister(self._chan_to_sock[(channel, client, type)])
+        sock = self._chan_to_sock[(channel, client, type)]
+        self.poller.unregister(sock)
+        del self._chan_to_sock[(channel, client, type)]
+        del self._fd_to_chan[sock.fileno()]
+        self.discard(channel)
 
     def _client_registered(self, channel, client, cmd):
         return (client.connection._sock is not None and

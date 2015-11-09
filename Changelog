@@ -95,6 +95,9 @@
 
     Contributed by Joshua Harlow.
 
+- Redis: improve unregistering a disconnected socket.
+
+
 .. _version-3.0.28:
 
 3.0.28
