@@ -273,10 +273,18 @@ class MultiChannelPoller(object):
         self.poller.register(sock, self.eventflags)
 
     def _unregister(self, channel, client, type):
-        sock = self._chan_to_sock[(channel, client, type)]
-        self.poller.unregister(sock)
+        """Remove this channel from self._fd_to_chan, self._chan_to_sock,
+        self._channels and self.poller."""
+
+        self.poller.unregister(self._chan_to_sock[(channel, client, type)])
         del self._chan_to_sock[(channel, client, type)]
-        del self._fd_to_chan[sock.fileno()]
+        # As we may not be able to use sock.fileno() anymore (it may raise
+        # socket.error), find the value in self._fd_to_chan that equals
+        # this channel and delete the corresponding key.
+        for fd, chan in list(self._fd_to_chan.items()):
+            if chan == channel:
+                del self._fd_to_chan[fd]
+
         self.discard(channel)
 
     def _register_BRPOP(self, channel):
